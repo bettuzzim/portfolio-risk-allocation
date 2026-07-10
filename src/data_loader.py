@@ -43,7 +43,11 @@ def load_market_data(start="2015-01-01", end=None):
         import yfinance as yf
 
         tickers = list(TICKERS.values())
-        data = yf.download(tickers, start=start, end=end, progress=False)["Close"]
+        # threads=False avoids a known yfinance issue where concurrent
+        # downloads write to its internal SQLite cache at the same time,
+        # raising "OperationalError: database is locked".
+        data = yf.download(tickers, start=start, end=end, progress=False,
+                            threads=False)["Close"]
 
         if data.empty or data.isna().all().all():
             raise ValueError("Empty data returned by yfinance.")
